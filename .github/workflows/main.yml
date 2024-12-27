@@ -19,7 +19,7 @@ jobs:
           docker tag clock2 ${{ secrets.DOCKER_USERNAME }}/clock2:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/clock2:latest
   Test:
-    runs-on: ubuntu:latest
+    runs-on: ubuntu-latest
     needs: Build
     steps:
       - name: Log in to Dockerhub
