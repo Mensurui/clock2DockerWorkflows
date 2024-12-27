@@ -32,9 +32,8 @@ jobs:
       - name: Run the Container
         run: |
           docker run -d --name clock2-container ${{ secrets.DOCKER_USERNAME }}/clock2:latest
-          docker exec clock2-container go test -v ./...
+          docker exec clock2-container bash -c "cd /app && go test -v ./..."
           docker stop clock2-container
-          docker rm clock2-container
   Production:
     runs-on: ubuntu-latest
     needs: Test  # Ensure that Production runs after Test job
