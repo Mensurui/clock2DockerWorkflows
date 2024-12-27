@@ -1,0 +1,44 @@
+name: CLOCK2
+on: [push, pull_request]
+
+jobs:
+  Build:
+    runs-on: ubuntu:latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Docker
+        run: docker build . --file Dockerfile --tag clock2
+      - name: Login to Docker
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Push Docker image to Dockerhub
+        run: |
+          docker tag clock2 ${{ secrets.DOCKER_USERNAME }}/clock2:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/clock2:latest
+  Test:
+    runs-on: ubuntu:latest
+    needs: Build
+    steps:
+      - name: Log in to Dockerhub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Pull Docker image from Dockerhub
+        run: docker pull ${{ secrets.DOCKER_USERNAME }}/clock2:latest
+      - name: Run the Container
+        run: |
+          docker run -d --name clock2-container ${{ secrets.DOCKER_USERNAME }}/clock2:latest
+          docker exec clock2-container go test -v ./...
+          docker stop clock2-container
+          docker rm clock2-container
+  Production:
+    runs-on: ubuntu-latest
+    needs: Test  # Ensure that Production runs after Test job
+    steps:
+      - name: Deploy Docker image (or other production-related steps)
+        run: |
+          echo "Deploy the image to production..."
